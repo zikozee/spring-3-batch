@@ -12,3 +12,11 @@ link: https://www.kaggle.com/datasets/gregorut/videogamesales?resource=download
     - then Inject using @Value
       - same way if the job parameters are the same for a period e.g same day job run, 
       - by default this would be seen used before, @StepScope helps job
+
+
+## Reading and Writing
+- Item Reader
+  - contract for reader :->> to have so read in one line at a tme
+- Item Writer
+  - contract for writer :->> you get a chunk
+
