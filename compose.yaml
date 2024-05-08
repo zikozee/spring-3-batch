@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: 'postgres:16.2'
+    environment:
+      - 'POSTGRES_DB=mydatabase'
+      - 'POSTGRES_PASSWORD=secret'
+      - 'POSTGRES_USER=myuser'
+    ports:
+      - "5432:5432"
+    volumes:
+      - /c/tmp/postgres_batch:/var/lib/postgresql/data
+
+volumes:
+  postgres:
+

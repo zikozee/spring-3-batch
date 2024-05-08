@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: spring-3-batch
+
+  batch:
+    jdbc:
+      # add all batch tables
+      initialize-schema: always
+
+    job:
+      # prevent auto run
+      enabled: false
+  sql:
+    init:
+      mode: never
