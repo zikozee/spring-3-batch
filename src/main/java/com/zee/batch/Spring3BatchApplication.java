@@ -45,9 +45,9 @@ public class Spring3BatchApplication {
 
     @Bean
 //    @StepScope  // for new initialized more like Prototype to be recreated each time
-    Job job(JobRepository jobRepository, Step csvToDb) {
+    Job job(JobRepository jobRepository, CsvToDbStepConfiguration csvToDbStepConfiguration) {
         return new JobBuilder("job", jobRepository)
-                .start(csvToDb)
+                .start(csvToDbStepConfiguration.csvToDb())
                 .build();
     }
 
@@ -57,7 +57,23 @@ public class Spring3BatchApplication {
 }
 
 @Configuration
+
 class CsvToDbStepConfiguration {
+
+    private final DataSource datasource;
+    private final JobRepository jobRepository;
+    private final PlatformTransactionManager tx;
+
+    private final Resource resource;
+
+    CsvToDbStepConfiguration(DataSource datasource, JobRepository jobRepository, PlatformTransactionManager tx,
+                             //@Value("file:///C:/Users/zikoz/Desktop/JAVA/MAVEN/2024_PROJECTS/may/spring-3-batch/data/vgsales.csv")
+                             @Value("classpath:vgsales.csv") Resource resource) {
+        this.datasource = datasource;
+        this.jobRepository = jobRepository;
+        this.tx = tx;
+        this.resource = resource;
+    }
 
     record CsvRow(
             int rank,
@@ -73,11 +89,7 @@ class CsvToDbStepConfiguration {
             float global) {}
 
     @Bean
-    FlatFileItemReader<CsvRow> csvRowFlatFileItemReader(
-//            @Value("file:///C:/Users/zikoz/Desktop/JAVA/MAVEN/2024_PROJECTS/may/spring-3-batch/data/vgsales.csv")
-            @Value("classpath:vgsales.csv")
-            Resource resource
-    ) {
+    FlatFileItemReader<CsvRow> csvRowFlatFileItemReader() {
         return new FlatFileItemReaderBuilder<CsvRow>()
                 .name("csvRowReader")
                 .resource(resource)
@@ -108,7 +120,7 @@ class CsvToDbStepConfiguration {
 
 
     @Bean
-    JdbcBatchItemWriter<CsvRow> csvRowJdbcBatchItemWriter(DataSource datasource) {
+    JdbcBatchItemWriter<CsvRow> csvRowJdbcBatchItemWriter() {
         String sql = """
                     insert into video_game_sales(
                         rank,
@@ -135,7 +147,15 @@ class CsvToDbStepConfiguration {
                         :jp_sales,
                         :other_sales,
                         :global_sales
-                     );
+                     )
+                     ON CONFLICT on constraint video_game_sales_name_platform_year_genre_key  do update set
+                        rank=excluded.rank,
+                        na_sales=excluded.na_sales,
+                        eu_sales=excluded.eu_sales,
+                        jp_sales=excluded.jp_sales,
+                        other_sales=excluded.other_sales,
+                        global_sales=excluded.global_sales
+                     ;
                 """;
         return new JdbcBatchItemWriterBuilder<CsvRow>()
                 .dataSource(datasource)
@@ -169,8 +189,7 @@ class CsvToDbStepConfiguration {
 
 
     @Bean
-    Step csvToDb(JobRepository jobRepository, PlatformTransactionManager tx,
-                 FlatFileItemReader<CsvRow> csvRowFlatFileItemReader, JdbcBatchItemWriter<CsvRow> csvRowJdbcBatchItemWriter) {
+    Step csvToDb() {
 
 //        String[] lines = (String[]) null;
 //        try (InputStreamReader reader = new InputStreamReader(data.getInputStream())){
@@ -184,7 +203,7 @@ class CsvToDbStepConfiguration {
         return new StepBuilder("csvToDb", jobRepository)
                 .<CsvRow,CsvRow>chunk(100, tx)
 //                .reader(new ListItemReader<>(Arrays.asList(lines)))
-                .reader(csvRowFlatFileItemReader)
+                .reader(csvRowFlatFileItemReader()) // spring caches this bean
 //                .writer(new ItemWriter<CsvRow>() {
 //
 //                    @Override
@@ -193,7 +212,7 @@ class CsvToDbStepConfiguration {
 //                        System.out.println("got " + onHundredRows.size());
 //                    }
 //                }).
-                .writer(csvRowJdbcBatchItemWriter)
+                .writer(csvRowJdbcBatchItemWriter())  // spring caches this bean
                 .build();
     }
 }
