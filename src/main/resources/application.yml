@@ -12,4 +12,8 @@ spring:
       enabled: false
   sql:
     init:
-      mode: never
+      mode: always
+
+  threads:
+    virtual:
+      enabled: true

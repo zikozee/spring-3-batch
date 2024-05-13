@@ -16,7 +16,13 @@ link: https://www.kaggle.com/datasets/gregorut/videogamesales?resource=download
 
 ## Reading and Writing
 - Item Reader
-  - contract for reader :->> to have so read in one line at a tme
+  - contract for reader :->> read in one line at a tme
 - Item Writer
   - contract for writer :->> you get a chunk
+
+## DefaultBatchConfiguration
+- this is called by default except you use @EnableBatchProcessing but you can't use together
+- check JobLauncher Bean (uses SimpleAsyncTaskExecutor) --->>> it takes you to this Default class 
+- same for JobRepository
+- where 
 

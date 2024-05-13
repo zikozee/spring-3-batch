@@ -1,3 +1,4 @@
+drop table video_game_sales;
 create table if not exists video_game_sales
 (
     rank         int,
@@ -6,10 +7,10 @@ create table if not exists video_game_sales
     year         int,
     genre        text,
     publisher    text,
-    na_sales     float,
-    eu_sales     float,
-    jp_sales     float,
-    other_sales  float,
-    global_sales float
+    na_sales     numeric(4, 2),
+    eu_sales     numeric(4, 2),
+    jp_sales     numeric(4, 2),
+    other_sales  numeric(4, 2),
+    global_sales numeric(4, 2)
 
-)
+);
